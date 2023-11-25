@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,6 +29,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import io.ktor.client.call.body
+import io.ktor.client.request.get
+import io.ktor.http.cio.Response
+import kr.co.eclipse4j.client.KtorClient
+import kr.co.eclipse4j.client.response.Todo
 import kr.co.eclipse4j.ui.theme.SurveyTheme
 
 class MainActivity : ComponentActivity() {
@@ -49,48 +55,58 @@ class MainActivity : ComponentActivity() {
 /** List of Items */
 @Composable
 fun SurveyListView(
-    modifier: Modifier = Modifier,
-    names: List<String> = List(10) {"$it"}
+    modifier: Modifier = Modifier
 ) {
+    var todos by remember { mutableStateOf(emptyList<Todo>()) }
+    LaunchedEffect(Unit) {
+        todos = getApiData()
+    }
+
     LazyColumn(modifier=modifier.padding(vertical = 4.dp)){
-        items(names) {name ->
-            SurveyList(name = name)
+        items(todos) {todo ->
+            SurveyList(todo = todo)
         }
+    }
+}
+
+suspend fun getApiData(): List<Todo> {
+    return run {
+        KtorClient.clinet().get("/todos").body()
     }
 }
 
 /** UI for Card */
 @Composable
-fun SurveyList(name: String) {
+fun SurveyList(todo: Todo) {
+
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primary
         ),
         modifier = Modifier.padding(vertical = 4.dp, horizontal = 4.dp)
     ) {
-        SurveyContent(name=name)
+        SurveyContent(todo = todo)
     }
 }
 
 /** UI for Card Content*/
 @Composable
-fun SurveyContent(name: String) {
+fun SurveyContent(todo: Todo) {
     var expanded by remember {
         mutableStateOf(false)
     }
     Row(
         modifier = Modifier
-            .padding(12.dp)
+            .padding(10.dp)
             .animateContentSize()
     ) {
         Column(
             modifier = Modifier
                 .weight(1f)
-                .padding(12.dp)
+                .padding(10.dp)
         ) {
-            Text(text = "Hello, ")
             Text(
-                text = name,
+                text = todo.title,
                 style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold)
                 )
             if( expanded ) {

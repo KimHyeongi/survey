@@ -13,3 +13,4 @@
 .externalNativeBuild
 .cxx
 local.properties
+/java/kr/co/eclipse4j/client/response/KtorClientAPIUrlProperty.kt

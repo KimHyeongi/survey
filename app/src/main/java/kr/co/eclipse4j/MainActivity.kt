@@ -1,6 +1,7 @@
 package kr.co.eclipse4j
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.animateContentSize
@@ -33,7 +34,8 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.http.cio.Response
 import kr.co.eclipse4j.client.KtorClient
-import kr.co.eclipse4j.client.response.Todo
+import kr.co.eclipse4j.client.response.Survey
+import kr.co.eclipse4j.client.response.SurveyList
 import kr.co.eclipse4j.ui.theme.SurveyTheme
 
 class MainActivity : ComponentActivity() {
@@ -57,27 +59,28 @@ class MainActivity : ComponentActivity() {
 fun SurveyListView(
     modifier: Modifier = Modifier
 ) {
-    var todos by remember { mutableStateOf(emptyList<Todo>()) }
+    var surveys by remember { mutableStateOf(emptyList<Survey>()) }
     LaunchedEffect(Unit) {
-        todos = getApiData()
+        val response = getApiData()
+        surveys = response.content
     }
 
     LazyColumn(modifier=modifier.padding(vertical = 4.dp)){
-        items(todos) {todo ->
-            SurveyList(todo = todo)
+        items(surveys) {survey ->
+            SurveyList(survey = survey)
         }
     }
 }
 
-suspend fun getApiData(): List<Todo> {
+suspend fun getApiData(): SurveyList {
     return run {
-        KtorClient.clinet().get("/todos").body()
+        KtorClient.client().get("/api/v1/surveys").body<SurveyList>()
     }
 }
 
 /** UI for Card */
 @Composable
-fun SurveyList(todo: Todo) {
+fun SurveyList(survey: Survey) {
 
     Card(
         colors = CardDefaults.cardColors(
@@ -85,13 +88,14 @@ fun SurveyList(todo: Todo) {
         ),
         modifier = Modifier.padding(vertical = 4.dp, horizontal = 4.dp)
     ) {
-        SurveyContent(todo = todo)
+        SurveyContent(survey = survey)
     }
 }
 
 /** UI for Card Content*/
 @Composable
-fun SurveyContent(todo: Todo) {
+fun SurveyContent(survey: Survey) {
+    val content = survey
     var expanded by remember {
         mutableStateOf(false)
     }
@@ -106,11 +110,11 @@ fun SurveyContent(todo: Todo) {
                 .padding(10.dp)
         ) {
             Text(
-                text = todo.title,
+                text = survey.title,
                 style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold)
                 )
             if( expanded ) {
-                Text(text = ("Co, pose ipsum color sit laxy").repeat(4))
+                Text(text = survey.description)
             }
         }
         IconButton(onClick = { expanded = !expanded }) {

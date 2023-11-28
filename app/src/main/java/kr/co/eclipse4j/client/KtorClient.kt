@@ -4,12 +4,14 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
-import io.ktor.serialization.gson.gson
+import io.ktor.serialization.kotlinx.json.json
+import kotlinx.serialization.json.Json
+import kr.co.eclipse4j.client.response.KtorClientAPIUrlProperty
 
 class KtorClient {
     companion object {
-        private val baseUrl: String = "https://jsonplaceholder.typicode.com/"
-        fun clinet(): HttpClient {
+        private val baseUrl: String = KtorClientAPIUrlProperty.base_url
+        fun client(): HttpClient {
             return HttpClient(CIO) {
                 expectSuccess = true
                 engine {
@@ -18,7 +20,11 @@ class KtorClient {
                     url(baseUrl)
                 }
                 install(ContentNegotiation) {
-                    gson()
+                    json(Json {
+                        prettyPrint = true
+                        isLenient = true
+                        ignoreUnknownKeys = true
+                    })
                 }
             }
         }

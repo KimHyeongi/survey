@@ -1,7 +1,7 @@
 package kr.co.eclipse4j
 
 import android.os.Bundle
-import android.util.Log
+import android.text.Html
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.animateContentSize
@@ -114,7 +114,7 @@ fun SurveyContent(survey: Survey) {
                 style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold)
                 )
             if( expanded ) {
-                Text(text = survey.description)
+                Text(text = Html.fromHtml(survey.description, Html.FROM_HTML_MODE_LEGACY).toString())
             }
         }
         IconButton(onClick = { expanded = !expanded }) {
